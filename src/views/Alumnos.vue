@@ -4,6 +4,7 @@
       <v-card-title>
         Alumos
         <v-spacer></v-spacer>
+        <v-btn @click="formulario.open=true">Agregar</v-btn>
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
@@ -14,7 +15,7 @@
       </v-card-title>
       <v-data-table
         :headers="headers"
-        :items="desserts"
+        :items="items"
         :search="search"
         :items-per-page="5"
       >
@@ -30,6 +31,8 @@
     descripcion="Seguro de querer eliminar el registro"
     @aceptar="aceptar"
   />
+
+  <Modal v-model="formulario.open" :data="formulario.data"/>
   </v-container>
 </template>
 
@@ -38,6 +41,17 @@
     components: {
       IconButton: () => import('@/components/Common/IconButton'),
       Confirm: () => import('@/components/Common/Confirm'),
+      Modal: () => import('@/components/Alumnos/Modal'),
+    },
+    async created(){
+
+      try{
+        const data = await this.$api.alumnos.index()
+
+        this.data = data
+      }catch(err){
+        console.log(err)
+      }
     },
     data () {
       return {
@@ -45,32 +59,46 @@
         item: null,
         open: false,
 
+        formulario: {
+          open: false, 
+          data: {}
+        },
+
         headers: [
-          { text: 'CTT', value: 'calories' },
+          { text: 'CURP', value: 'curp' },
           {
             text: 'Nombre',
             align: 'start',
             sortable: false,
-            value: 'name',
+            value: 'nombre',
+          },
+          {
+            text: 'Genero',
+            align: 'start',
+            sortable: false,
+            value: 'genero',
           },
           { text: '', value: 'actions', sortable: false, width: '100px' },
         ],
-        desserts: [
-          { name: 'Frozen Yogurt', calories: 159,},
-          { name: 'Ice cream sandwich', calories: 237,},
-          { name: 'Eclair', calories: 262,},
-          { name: 'Cupcake', calories: 305,},
-          { name: 'Gingerbread', calories: 356,},
-          { name: 'Jelly bean', calories: 375,},
-          { name: 'Lollipop', calories: 392,},
-          { name: 'Honeycomb', calories: 408,},
-          { name: 'Donut', calories: 452,},
-          { name: 'KitKat', calories: 518,},
-        ],
+        data: [],
+      }
+    },
+    computed: {
+      items(){
+        return this.data.map(v => ({
+          curp: v.curp.toUpperCase(),
+          nombre: `${v.nombre} ${v.primer_apellido} ${v.segundo_apellido}`.trim(),
+          genero: v.genero === 1 ? 'Masculino': 'Femenino'
+        }))
       }
     },
     methods: {
-      editar(data){ console.log(data)},
+      editar(data){
+        this.formulario = {
+          open: true,
+          data
+        }
+      },
       eliminar(data){ 
         this.item = data
         this.open = true

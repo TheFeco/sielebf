@@ -4,6 +4,7 @@
       <v-card-title>
         Escuelas
         <v-spacer></v-spacer>
+        <v-btn @click="formulario.open=true">Agregar</v-btn>
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
@@ -30,20 +31,29 @@
     descripcion="Seguro de querer eliminar el registro"
     @aceptar="aceptar"
   />
+
+  <Modal v-model="formulario.open" :data="formulario.data"/>
   </v-container>
 </template>
 
 <script>
+
   export default {
     components: {
       IconButton: () => import('@/components/Common/IconButton'),
       Confirm: () => import('@/components/Common/Confirm'),
+      Modal: () => import('@/components/Escuelas/Modal'),
     },
     data () {
       return {
         search: '',
         item: null,
         open: false,
+
+        formulario: {
+          open: false, 
+          data: {}
+        },
 
         headers: [
           { text: 'CTT', value: 'calories' },
