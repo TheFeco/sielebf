@@ -4,7 +4,7 @@
       <v-card-title>
         Alumos
         <v-spacer></v-spacer>
-        <v-btn @click="formulario.open=true">Agregar</v-btn>
+        <v-btn @click="agregar">Agregar</v-btn>
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
@@ -86,6 +86,7 @@
     computed: {
       items(){
         return this.data.map(v => ({
+          id: v.id,
           curp: v.curp.toUpperCase(),
           nombre: `${v.nombre} ${v.primer_apellido} ${v.segundo_apellido}`.trim(),
           genero: v.genero === 1 ? 'Masculino': 'Femenino'
@@ -93,10 +94,18 @@
       }
     },
     methods: {
-      editar(data){
+      agregar(){
         this.formulario = {
           open: true,
-          data
+          data: {},
+        }
+      },
+      editar(data){
+        const row = this.data.find(v => v.id === data.id)
+
+        this.formulario = {
+          open: true,
+          data: row,
         }
       },
       eliminar(data){ 

@@ -151,10 +151,16 @@ export default {
       default: () => ({})
     }
   },
-  watch: {
-    data(value){
-      this.form = pick(value, formFields)
-    }
+  mounted() {
+    this.$watch(vm => [vm.value, vm.data], ([open, form]) => {
+
+      if(open) this.form = pick(form, formFields)
+      if(isEmpty(form)) this.form = {...this.form, genero: 1, turno: true, grado: 1}
+      
+    }, {
+      immediate: true, // run immediately
+      deep: true // detects changes inside objects. not needed here, but maybe in other cases
+    }) 
   },
   data() {
     return {

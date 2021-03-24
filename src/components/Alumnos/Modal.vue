@@ -15,7 +15,7 @@
               <v-col cols="12">
                 <Field
                   placeholder="CURP *"
-                  v-model="form.ctt"
+                  v-model="form.curp"
                   required
                   :rules="rules.required"
                   icon="mdi-badge-account-horizontal-outline"
@@ -25,7 +25,7 @@
               <v-col cols="12">
                 <Field
                   placeholder="Nombre *"
-                  v-model="form.ctt"
+                  v-model="form.nombre"
                   required
                   :rules="rules.required"
                   icon="mdi-text-short"
@@ -34,7 +34,7 @@
               <v-col sm="6" cols="12">
                 <Field
                   placeholder="Primer apellido *"
-                  v-model="form.ctt"
+                  v-model="form.primer_apellido"
                   required
                   :rules="rules.required"
                   icon="mdi-text-short"
@@ -43,14 +43,14 @@
               <v-col sm="6" cols="12">
                 <Field
                   placeholder="Segundo apellido *"
-                  v-model="form.ctt"
+                  v-model="form.segundo_apellido"
                   required
                   :rules="rules.required"
                   icon="mdi-text-short"
                 />
               </v-col>
               <v-col sm="6" cols="12">
-                <v-radio-group v-model="form.sexo" row>
+                <v-radio-group v-model="form.genero" row>
                   <v-radio
                     class="mr-4"
                     label="Masculino"
@@ -73,7 +73,7 @@
               <v-col sm="6" cols="12">
                 <Field
                   placeholder="Grupo *"
-                  v-model="form.ctt"
+                  v-model="form.grupo"
                   required
                   :rules="rules.required"
                   icon="mdi-home-outline"
@@ -87,6 +87,16 @@
                   required
                   :rules="rules.required"
                   icon="mdi-format-list-numbered"
+                />
+              </v-col>
+              <v-col sm="6" cols="12">
+                <Select 
+                  v-model="form.id_escuela"
+                  placeholder="Escuela *"
+                  :items="[{text: 'Primaria', value: 1}, {text: 'Secundaria', value: 2}]"
+                  required
+                  :rules="rules.required"
+                  icon="mdi-domain"
                 />
               </v-col>
               <v-col sm="6" cols="12">
@@ -118,7 +128,7 @@
 /* eslint-disable camelcase */
 import { isEmpty, pick } from 'lodash'
 
-const formFields = ['ctt']
+const formFields = ['curp', 'nombre', 'primer_apellido', 'segundo_apellido', 'genero']
 export default {
   components:{
     Select: ()=> import('@/components/Form/Select'),
@@ -135,13 +145,24 @@ export default {
       default: () => ({})
     }
   },
-  watch: {
-    data(value){
-      this.form = pick(value, formFields)
-    }
+  mounted() {
+    this.$watch(vm => [vm.value, vm.data], ([open, form]) => {
+      
+      this.isCreate = isEmpty(form);
+      if(open) {
+        this.form = pick(form, formFields)
+        this.load()
+      }
+      if(isEmpty(form)) this.form = {...this.form, genero: 1, turno: true, grado: 1}
+      
+    }, {
+      immediate: true, // run immediately
+      deep: true // detects changes inside objects. not needed here, but maybe in other cases
+    }) 
   },
   data() {
     return {
+      isCreate: true,
       valid: true,
       rules: {
         required: [(v) => !!v || 'Este campo es requerido'],
@@ -154,28 +175,32 @@ export default {
     }
   },
   methods: {
+    async load(){
+      const res = await this.$api.alumnos.create();
+
+      console.log(res)
+    },
     cancelar() {
       this.$emit('input', false)
     },
-    aceptar() {
-      const isCreate = isEmpty(this.data)
-
+    async aceptar() {
       try {
-        const id = 1, 
-        params = {}
+         
+        const params = pick(this.form, formFields)
 
-        let escuela = null
+        let alumno = null
 
-        if(isCreate){
-          escuela = this.$api.escuelas.store(id, params)
+        if(this.isCreate){
+          alumno = await this.$api.alumnos.store(params)
         }
         else {
-          escuela = this.$api.escuelas.update(id, params)
+          const id = this.data.id
+          alumno = await this.$api.alumnos.update(id, params)
         }
 
-        console.log(escuela)
+        this.$emit('on-aceptar', alumno)
       }catch (error) {
-        console.log(error)
+        this.$emit('on-error', 'Error al querer guardar')
       }
     },
   }

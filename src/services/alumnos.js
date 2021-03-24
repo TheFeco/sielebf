@@ -10,6 +10,7 @@ export default (http) => {
 
     return {
         index: model.index.bind(model),
+        create: model.create.bind(model),
         store: model.store.bind(model),
         update: model.update.bind(model),
         delete: model.delete.bind(model),
