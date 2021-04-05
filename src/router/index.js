@@ -29,6 +29,16 @@ const routes = [
     path: '/alumnos',
     name: 'Alumnos',
     component: () => import('../views/Alumnos.vue')
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/LoginAlumnos.vue')
+  },
+  {
+    path: '/loginAdmin',
+    name: 'loginAdmin',
+    component: () => import('../views/LoginAdmin.vue')
   }
 ]
 
